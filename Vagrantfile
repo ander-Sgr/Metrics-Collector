@@ -11,7 +11,10 @@ Vagrant.configure("2") do |config|
     dbmetrics.vm.network "public_network", ip: "192.168.1.155"
 
     config.vm.synced_folder ".", "/vagrant"
+    config.vm.provision "file", source: "./collector", destination: "/home/vagrant/collector"
     dbmetrics.vm.provision "shell", path: "scripts/postgres_install.sh"
+    dbmetrics.vm.provision "shell", path: "scripts/config_cron.sh"
+
   end
 
   config.vm.define "node1" do |node|
