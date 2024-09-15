@@ -4,6 +4,7 @@ APP_DIR="/home/vagrant/services/metrics"
 VENV_DIR="$APP_DIR/.venv"
 USER="metric_service"
 SOURCE_FILE_DAEMON="/etc/systemd/system/metrics.service"
+IP_NODE="10.0.0.50"
 
 is_installed () {
     dpkg -l | grep -q "$1"
@@ -41,13 +42,15 @@ install_app_dependencies () {
         echo "[ERROR] Check project dir, not found"
         exit 1
     else
+        echo "[INFO] Updating pip, setuptools, and wheel"
+        pip install --upgrade pip setuptools wheel
+
         if ! pip show flask &> /dev/null && ! pip show gunicorn &> /dev/null; then
             echo "[INFO] Installing dependencies"
-            pip install wheel flask gunicorn psutil   
+            pip install flask gunicorn psutil
         fi
     fi
 }
-
 #create a user for execute the daemon flask with gunicorn
 create_user() {
     if getent passwd "$USER" > /dev/null 2>&1; then
@@ -91,7 +94,7 @@ create_deamon () {
         User=${USER}
         Group=${USER}
         WorkingDirectory=${APP_DIR}
-        ExecStart=${APP_DIR}/.venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 metric_app:app
+        ExecStart=${APP_DIR}/.venv/bin/gunicorn --workers 3 --bind ${IP_NODE}:8000 metric_app:app
 
         [Install]
         WantedBy=multi-user.target
